@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import './fonts.css';
+
+
+@layer base {
+  :root {
+    --primary-light: #3b82f6;
+    --primary-dark: #60a5fa;
+    --background-light: #ffffff;
+    --background-dark: #1f2937;
+  }
+
+  /* Custom utility classes */
+  .text-adaptive {
+    @apply text-gray-900 dark:text-gray-100;
+  }
+  
+  .bg-adaptive {
+    @apply bg-white dark:bg-gray-900;
+  }
+  
+  .border-adaptive {
+    @apply border-gray-200 dark:border-gray-700;
+  }
+}
+/* Hide scrollbar but allow scrolling */
+.hide-scrollbar {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, and Edge */
+  }
+  
