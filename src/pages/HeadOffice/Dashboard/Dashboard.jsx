@@ -1,335 +1,184 @@
-import React, { useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
-import { 
-  TrendingUp, 
-  Package, 
-  Users, 
-  DollarSign, 
-  Bell, 
-  CheckCircle, 
-  AlertTriangle,
-  ChevronRight
-} from 'lucide-react';
-import MainLayout from '../Layout/Layout';
-import SalesComparisonChart from '../../DshBd';
+import React from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
-// Consistent color palette
-const COLORS = {
-  primary: '#3B82F6',
-  secondary: '#10B981',
-  warning: '#F59E0B',
-  danger: '#EF4444',
-  info: '#6366F1'
-};
+const DamageCartPayments = ({ data }) => {
+  // Colors for charts
+  const COLORS = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+  const STATUS_COLORS = {
+    'EXPIRY': '#EF4444',
+    '': '#3B82F6'
+  };
 
-// Sample data
-const salesData = [
-  { month: 'Jan', sales: 4000, target: 3500 },
-  { month: 'Feb', sales: 3000, target: 3500 },
-  { month: 'Mar', sales: 5000, target: 3500 },
-  { month: 'Apr', sales: 4500, target: 3500 },
-  { month: 'May', sales: 6000, target: 3500 },
-];
+  // Process data for charts
+  const getTotalDamageQty = () => {
+    return data.reduce((sum, item) => sum + parseFloat(item.Qty || 0), 0).toFixed(2);
+  };
 
-const inventoryData = [
-  { name: 'Electronics', value: 400, icon: <Package /> },
-  { name: 'Clothing', value: 300, icon: <Users /> },
-  { name: 'Furniture', value: 200, icon: <TrendingUp /> },
-];
+  const getTotalMRPValue = () => {
+    return data.reduce((sum, item) => sum + (parseFloat(item.Qty || 0) * parseFloat(item.MRP || 0)), 0).toFixed(2);
+  };
 
-// Zero Stock and Sales Opportunity Data
-const zeroStockItems = [
-  { 
-    sku: 'ELEC-001', 
-    name: 'Wireless Headphones', 
-    category: 'Electronics', 
-    potentialLoss: 15000,
-    lastStocked: '2 months ago'
-  },
-  { 
-    sku: 'CLOTH-005', 
-    name: 'Summer Collection Shirt', 
-    category: 'Clothing', 
-    potentialLoss: 7500,
-    lastStocked: '1 month ago'
-  },
-];
+  const getDamageByReason = () => {
+    const reasons = {};
+    data.forEach(item => {
+      const reason = item.remark || 'Unspecified';
+      if (!reasons[reason]) {
+        reasons[reason] = {
+          name: reason,
+          value: 1,
+          qty: parseFloat(item.Qty || 0),
+          mrpValue: parseFloat(item.Qty || 0) * parseFloat(item.MRP || 0)
+        };
+      } else {
+        reasons[reason].value += 1;
+        reasons[reason].qty += parseFloat(item.Qty || 0);
+        reasons[reason].mrpValue += parseFloat(item.Qty || 0) * parseFloat(item.MRP || 0);
+      }
+    });
+    return Object.values(reasons);
+  };
 
-const salesOpportunityData = [
-  { category: 'Electronics', opportunityLoss: 45000 },
-  { category: 'Clothing', opportunityLoss: 22000 },
-  { category: 'Furniture', opportunityLoss: 33000 },
-];
-
-const ERPDashboard = () => {
-  const [activeModal, setActiveModal] = useState(null);
-  const [activeView, setActiveView] = useState('overview');
-
-  const TotalSalesOpportunityLoss = salesOpportunityData.reduce((sum, item) => sum + item.opportunityLoss, 0);
-
-  const ZeroStockModal = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-6 w-[600px] max-h-[80vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Zero Stock Items</h2>
-          <button 
-            onClick={() => setActiveModal(null)} 
-            className="text-gray-500 hover:text-gray-700"
-          >
-            Close
-          </button>
-        </div>
-        <table className="w-full text-left">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="p-3">SKU</th>
-              <th className="p-3">Product Name</th>
-              <th className="p-3">Category</th>
-              <th className="p-3">Potential Loss</th>
-            </tr>
-          </thead>
-          <tbody>
-            {zeroStockItems.map((item, index) => (
-              <tr key={index} className="border-b">
-                <td className="p-3">{item.sku}</td>
-                <td className="p-3">{item.name}</td>
-                <td className="p-3">{item.category}</td>
-                <td className="p-3 font-bold text-red-600">${item.potentialLoss.toLocaleString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-
-  const SalesOpportunityModal = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-6 w-[600px]">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Sales Opportunity Loss</h2>
-          <button 
-            onClick={() => setActiveModal(null)} 
-            className="text-gray-500 hover:text-gray-700"
-          >
-            Close
-          </button>
-        </div>
-        <PieChart width={500} height={300}>
-          <Pie
-            data={salesOpportunityData}
-            cx={250}
-            cy={150}
-            labelLine={false}
-            outerRadius={100}
-            fill="#8884d8"
-            dataKey="opportunityLoss"
-            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-          >
-            {salesOpportunityData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={Object.values(COLORS)[index]} />
-            ))}
-          </Pie>
-          <Tooltip />
-        </PieChart>
-        {salesOpportunityData.map((item, index) => (
-          <div key={index} className="flex justify-between p-2 border-b">
-            <span>{item.category}</span>
-            <span className="font-bold text-red-600">${item.opportunityLoss.toLocaleString()}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  const MetricCard = ({ title, value, change, icon: Icon, color }) => (
-    <div className={`bg-white rounded-2xl shadow-lg p-5 border-l-4 hover:shadow-xl transition-all`} 
-         style={{ borderColor: color }}>
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-gray-500 text-sm uppercase tracking-wide">{title}</h3>
-          <div className="flex items-center mt-2">
-            <span className="text-2xl font-bold mr-3">{value}</span>
-            <span className={`text-sm font-medium ${change > 0 ? 'text-green-500' : 'text-red-500'}`}>
-              {change > 0 ? '▲' : '▼'} {Math.abs(change)}%
-            </span>
-          </div>
-        </div>
-        <div className={`p-3 rounded-full bg-opacity-10`} style={{ backgroundColor: color + '20' }}>
-          <Icon className="w-6 h-6" style={{ color }} />
-        </div>
-      </div>
-    </div>
-  );
+  const getDateGroupedData = () => {
+    const grouped = {};
+    data.forEach(item => {
+      const date = new Date(item.dot).toLocaleDateString();
+      if (!grouped[date]) {
+        grouped[date] = {
+          date,
+          count: 1,
+          qty: parseFloat(item.Qty || 0),
+          mrpValue: parseFloat(item.Qty || 0) * parseFloat(item.MRP || 0)
+        };
+      } else {
+        grouped[date].count += 1;
+        grouped[date].qty += parseFloat(item.Qty || 0);
+        grouped[date].mrpValue += parseFloat(item.Qty || 0) * parseFloat(item.MRP || 0);
+      }
+    });
+    return Object.values(grouped).sort((a, b) => new Date(a.date) - new Date(b.date));
+  };
 
   return (
-   <MainLayout>
-     <div className="bg-gray-50  rounded-md min-h-screen p-6">
-      {activeModal === 'zeroStock' && <ZeroStockModal />}
-      {activeModal === 'salesOpportunity' && <SalesOpportunityModal />}
+    <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="p-6 border-b border-gray-200">
+        <h2 className="text-xl font-semibold text-gray-800">Damage Cart Payments</h2>
+        <p className="text-sm text-gray-500 mt-1">Analysis of damage cart entries and payments</p>
+      </div>
 
-      <div className="grid grid-cols-4 gap-6 mb-6">
-        <MetricCard 
-          title="Total Revenue" 
-          value="$450K" 
-          change={12.5} 
-          icon={DollarSign} 
-          color={COLORS.primary} 
-        />
-        <MetricCard 
-          title="Profit Margin" 
-          value="28%" 
-          change={8.3} 
-          icon={TrendingUp} 
-          color={COLORS.secondary} 
-        />
-        <div 
-          className="bg-white rounded-2xl shadow-lg p-5 hover:shadow-xl transition-all cursor-pointer"
-          onClick={() => setActiveModal('zeroStock')}
-        >
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-gray-500 text-sm uppercase tracking-wide">Zero Stock Items</h3>
-              <div className="flex items-center mt-2">
-                <span className="text-2xl font-bold mr-3">{zeroStockItems.length}</span>
-                <span className="text-red-500 text-sm">Critical</span>
-              </div>
-            </div>
-            <div className="p-3 rounded-full bg-red-50">
-              <AlertTriangle className="w-6 h-6 text-red-500" />
-            </div>
-          </div>
-          <div className="flex items-center justify-between mt-4">
-            <span>View Details</span>
-            <ChevronRight className="w-5 h-5 text-gray-500" />
-          </div>
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-6">
+        <div className="bg-red-50 rounded-lg p-4 flex flex-col">
+          <span className="text-red-500 text-sm font-medium">Total Entries</span>
+          <span className="text-2xl font-bold text-red-700">{data.length}</span>
         </div>
-        <div 
-          className="bg-white rounded-2xl shadow-lg p-5 hover:shadow-xl transition-all cursor-pointer"
-          onClick={() => setActiveModal('salesOpportunity')}
-        >
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-gray-500 text-sm uppercase tracking-wide">Sales Opportunity Loss</h3>
-              <div className="flex items-center mt-2">
-                <span className="text-2xl font-bold mr-3">${TotalSalesOpportunityLoss.toLocaleString()}</span>
-                <span className="text-red-500 text-sm">Impact</span>
-              </div>
-            </div>
-            <div className="p-3 rounded-full bg-yellow-50">
-              <TrendingUp className="w-6 h-6 text-yellow-500" />
-            </div>
-          </div>
-          <div className="flex items-center justify-between mt-4">
-            <span>View Details</span>
-            <ChevronRight className="w-5 h-5 text-gray-500" />
-          </div>
+        
+        <div className="bg-orange-50 rounded-lg p-4 flex flex-col">
+          <span className="text-orange-500 text-sm font-medium">Total Quantity</span>
+          <span className="text-2xl font-bold text-orange-700">{getTotalDamageQty()}</span>
+        </div>
+        
+        <div className="bg-blue-50 rounded-lg p-4 flex flex-col">
+          <span className="text-blue-500 text-sm font-medium">Total MRP Value</span>
+          <span className="text-2xl font-bold text-blue-700">₹{getTotalMRPValue()}</span>
+        </div>
+        
+        <div className="bg-green-50 rounded-lg p-4 flex flex-col">
+          <span className="text-green-500 text-sm font-medium">Purchase After</span>
+          <span className="text-2xl font-bold text-green-700">
+            {data.reduce((sum, item) => sum + parseFloat(item.purchaseAfter || 0), 0).toFixed(2)}
+          </span>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        {/* Sales Trend Chart */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 col-span-2">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-gray-800">Sales Performance</h2>
-            <div className="flex space-x-2">
-              {['1M', '3M', '1Y'].map(period => (
-                <button 
-                  key={period} 
-                  className="px-3 py-1 rounded-full text-sm hover:bg-blue-50 transition-colors"
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h3 className="text-gray-700 font-medium mb-4">Damage by Reason</h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={getDamageByReason()}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  fill="#8884d8"
+                  label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
                 >
-                  {period}
-                </button>
+                  {getDamageByReason().map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value, name, props) => [`${value} items`, props.payload.name]} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+        
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h3 className="text-gray-700 font-medium mb-4">Damage by Date</h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={getDateGroupedData()}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip formatter={(value, name) => [name === 'qty' ? `${value} units` : `₹${value}`, name === 'qty' ? 'Quantity' : 'MRP Value']} />
+                <Legend />
+                <Bar dataKey="qty" name="Quantity" fill="#FF6384" />
+                <Bar dataKey="mrpValue" name="MRP Value" fill="#36A2EB" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Detailed Table */}
+      <div className="p-6">
+        <h3 className="text-gray-700 font-medium mb-4">Detailed Damage Entries</h3>
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white border border-gray-200 rounded-md">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Carton No</th>
+                <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">MRP</th>
+                <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {data.map((item, index) => (
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="py-4 px-4 text-sm font-medium text-gray-900">
+                    <div className="flex flex-col">
+                      <span className="font-medium">{item.SkuName}</span>
+                      <span className="text-xs text-gray-500">Code: {item.code}</span>
+                    </div>
+                  </td>
+                  <td className="py-4 px-4 text-sm text-gray-500">{item.cartonNo}</td>
+                  <td className="py-4 px-4 text-sm text-gray-500">{new Date(item.dot).toLocaleDateString()}</td>
+                  <td className="py-4 px-4 text-sm text-gray-500">{parseFloat(item.Qty).toFixed(2)}</td>
+                  <td className="py-4 px-4 text-sm text-gray-500">₹{parseFloat(item.MRP).toFixed(2)}</td>
+                  <td className="py-4 px-4 text-sm">
+                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      item.remark === 'EXPIRY' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
+                    }`}>
+                      {item.remark || 'Unspecified'}
+                    </span>
+                  </td>
+                </tr>
               ))}
-            </div>
-          </div>
-          <LineChart width={700} height={300} data={salesData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis dataKey="month" />
-            <YAxis />
-            <Tooltip />
-            <Line type="monotone" dataKey="sales" stroke={COLORS.primary} strokeWidth={3} />
-            <Line type="monotone" dataKey="target" stroke={COLORS.secondary} strokeDasharray="5 5" />
-          </LineChart>
-        </div>
-
-        {/* Inventory Breakdown */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Inventory Distribution</h2>
-          <PieChart width={350} height={250}>
-            <Pie
-              data={inventoryData}
-              innerRadius={60}
-              outerRadius={90}
-              fill="#8884d8"
-              dataKey="value"
-              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-            >
-              {inventoryData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={Object.values(COLORS)[index]} />
-              ))}
-            </Pie>
-            <Tooltip />
-          </PieChart>
-          <div className="flex justify-around mt-4">
-            {inventoryData.map((item, index) => (
-              <div key={index} className="flex items-center">
-                {item.icon}
-                <span className="ml-2 text-sm">{item.name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-      <div className='bg-white rounded-2xl mx-auto mt-6 flex flex-col items-center justify-center shadow-lg p-6'>
-      <div className="flex justify-between items-center mb-4">
-      <h2 className="text-xl font-bold text-gray-800">Weakly Sales Comparison</h2>
-      </div>
-        <SalesComparisonChart/>
-      </div>
-
-      {/* Alerts & Tasks */}
-      <div className="grid grid-cols-3 gap-6 mt-6">
-        <div className="bg-white rounded-2xl shadow-lg p-6 col-span-2">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-gray-800">Pending Tasks</h2>
-            <button className="text-blue-500 hover:underline">View All</button>
-          </div>
-          {[
-            { icon: <CheckCircle className="text-green-500" />, title: 'Approve PO #5672', time: '2h ago' },
-            { icon: <AlertTriangle className="text-yellow-500" />, title: 'Inventory Audit', time: '1d ago' },
-            { icon: <Bell className="text-blue-500" />, title: 'Team Meeting', time: 'Tomorrow' }
-          ].map((task, index) => (
-            <div key={index} className="flex justify-between items-center border-b py-3 last:border-b-0">
-              <div className="flex items-center space-x-4">
-                {task.icon}
-                <span className="font-medium">{task.title}</span>
-              </div>
-              <span className="text-gray-500 text-sm">{task.time}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">System Alerts</h2>
-          {[
-            { type: 'warning', message: 'Low stock for Product A', icon: <AlertTriangle className="text-yellow-500" /> },
-            { type: 'error', message: 'Payment gateway issue', icon: <Bell className="text-red-500" /> },
-            { type: 'info', message: 'Software update available', icon: <CheckCircle className="text-blue-500" /> }
-          ].map((alert, index) => (
-            <div 
-              key={index} 
-              className="flex items-center space-x-4 border-b py-3 last:border-b-0"
-            >
-              {alert.icon}
-              <span>{alert.message}</span>
-            </div>
-          ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
-   </MainLayout>
   );
 };
 
-export default ERPDashboard;
+export default DamageCartPayments;

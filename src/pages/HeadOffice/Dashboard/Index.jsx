@@ -724,7 +724,7 @@ const Dashboard = () => {
         {/* Dashboard Header */}
         <div className="flex justify-between  items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold  text-gray-800">ERP Dashboard</h1>
+            <h1 className="text-2xl font-bold  text-gray-800">Dashboard</h1>
             <p className="text-gray-500">
               Welcome back! Here's what's happening with your business today.
             </p>
@@ -782,7 +782,7 @@ const Dashboard = () => {
             </div>
 
             {/* Action Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+            {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
               <ActionCard
                 title="Zero Stock Items"
                 value={metrics.zeroStockCount}
@@ -811,12 +811,11 @@ const Dashboard = () => {
                 onClick={() => {}}
                 index={2}
               />
-            </div>
+            </div> */}
             {/* Charts Row */}
             <SalesOverView />
             {/* Third Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-              {/* Recent Alerts */}
+            {/* <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
               <div className="bg-white p-6 rounded-lg shadow">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-lg font-semibold">Recent Alerts</h2>
@@ -844,7 +843,7 @@ const Dashboard = () => {
                   View All Alerts
                 </button>
               </div>
-            </div>
+            </div> */}
 
           </>
         )}

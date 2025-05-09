@@ -293,8 +293,10 @@ function PendingCrNoteRefundExceptions() {
         <div className="bg-white shadow-md rounded-xl mb-6">
           <div className="px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-200 gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">Pending CrNote Refund Exceptions</h1>
-              <p className="text-gray-500">Analyze and manage pending credit note refund entries</p>
+              <h1 className="text-2xl font-bold text-gray-800">Pending Credit Notes
+
+</h1>
+              <p className="text-gray-500">Analyze and manage pending credit note entries</p>
             </div>
             <div className="flex flex-wrap gap-3 self-end sm:self-auto">
               {/* Date Range Dropdown */}

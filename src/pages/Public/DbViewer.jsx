@@ -45,7 +45,7 @@ const DatabaseSchemaViewer = ({ data }) => {
   const currentTableColumns = data.find(table => table.name === selectedTable)?.cloumns || [];
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1200px', margin: 'auto' }}>
+    <div className='bg-gray-200' style={{ padding: '20px', maxWidth: '1200px', margin: 'auto' }}>
       <h1 style={{ textAlign: 'center' }}>Database Schema Viewer</h1>
       
       <div style={buttonContainerStyle}>
@@ -60,7 +60,7 @@ const DatabaseSchemaViewer = ({ data }) => {
         ))}
       </div>
 
-      <table style={tableStyle}>
+      <table className='bg-white' style={tableStyle}>
         <thead>
           <tr>
             <th style={headerStyle}>Column Name</th>
@@ -87,7 +87,6 @@ const DatabaseSchemaViewer = ({ data }) => {
     </div>
   );
 };
-
 
 const DbViewer=()=>{
     const [data,setData] = useState([])

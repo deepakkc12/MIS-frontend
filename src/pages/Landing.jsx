@@ -12,7 +12,7 @@ function Landing() {
       if (user.role == roles.employee){
         redirectPath = '/'
       }else if(user.role == roles.superAdmin){
-        redirectPath = "/dashboard"
+        redirectPath = "/sales"
       }else{
         redirectPath = '/login'
       }

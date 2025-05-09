@@ -26,3 +26,5 @@ export const userPrivileges = {
     delete_kot : "KOT-DEL",
     reprint_kot :"Re-PNT"
 }
+
+export const lastUpdated = 'Feb 21, 2025'

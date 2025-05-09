@@ -21,7 +21,11 @@ import {
   Shield,
   PersonStanding,
   Package,
-  LayoutDashboard
+  LayoutDashboard,
+  TrendingUp,
+  Receipt,
+  ReceiptIndianRupee,
+  ChartSplineIcon
 } from "lucide-react";
 import { cn } from "../../../utils/helper";
 
@@ -41,7 +45,7 @@ const SidebarItem = ({ icon, text, path, collapsed, active, children }) => {
     <>
       <div
         className={cn(
-          "p-2 rounded-full transition-colors duration-200",
+          "p-1.5 rounded-full transition-colors duration-200",
           active ? "bg-indigo-500 text-white" : "bg-indigo-500/10"
         )}
       >
@@ -51,7 +55,7 @@ const SidebarItem = ({ icon, text, path, collapsed, active, children }) => {
         <>
           <span
             className={cn(
-              "ml-2 flex-grow font-semibold",
+              "ml-2 flex-grow text-[15px] font-semibold",
               active ? "text-indigo-500" : "text-neutral-600"
             )}
           >
@@ -139,53 +143,63 @@ const Sidebar = ({ open, collapsed, toggleSidebar }) => {
   const location = useLocation();
 
   const menuItems = [
+    // {
+    //   icon: <LayoutDashboard size={16} />,
+    //   text: "Dashboard",
+    //   path: "/dashboard",
+    // },
     {
-      icon: <LayoutDashboard size={20} />,
-      text: "Dashboard",
-      path: "/dashboard",
+      icon: <TrendingUp size={16} />,
+      text: "Sales",
+      path: "/sales",
     },
     {
-      icon: <Users size={20} />, // Represents CRM better
+      icon: <Users size={16} />, // Represents CRM better
       text: "CRM",
       path: "/crm",
     },
     {
-      icon: <Package size={20} />,
+      icon: <Package size={16} />,
       text: "Inventory",
       path: "/inventory",
     },
     {
-      icon: <DollarSign size={20} />, // Represents Financials clearly
+      icon: <ReceiptIndianRupee size={16} />, // Represents Financials clearly
       text: "Financials",
       path: "/financials",
     },
     {
-      icon: <Shield size={20} />,
+      icon: <Shield size={16} />,
       text: "MIS Analatycs",
       path: "/mis-reports",
     },
     {
-      icon: <ChartColumn size={20} />,
+      icon: <ChartSplineIcon size={16} />,
+      text: "Monthly Reports",
+      path: "/monthly-reports",
+    },
+    {
+      icon: <ChartColumn size={16} />,
       text: "Daily Reports",
       path: "/daily-reports",
     },
     {
-      icon: <ChartAreaIcon size={20} />,
+      icon: <ChartAreaIcon size={16} />,
       text: "Day wise Reports",
       path: "/day-wise-reports",
     }, 
     {
-      icon: <ChartBar size={20} />,
+      icon: <ChartBar size={16} />,
       text: "Day wise summery",
       path: "/day-wise-summery",
     },
     {
-      icon: <ChartBarBigIcon size={20} />,
+      icon: <ChartBarBigIcon size={16} />,
       text: "Pivot Report",
       path: "/ho/branch/list",
     },
     {
-      icon: <AlertCircle size={20} />,
+      icon: <AlertCircle size={16} />,
       text: "Alerts",
       path: "/alerts",
     }
@@ -210,13 +224,13 @@ const Sidebar = ({ open, collapsed, toggleSidebar }) => {
               !collapsed || hovering ? "p-4" : "p-3"
             )}
           >
-            <div className="text-2xl font-bold text-indigo-500">
+            <div className="text-xl font-bold text-indigo-500">
               {!collapsed || hovering ? "HO" : "HO"}
             </div>
           </div>
 
           {/* Navigation Section */}
-          <nav className="flex-grow mt-2 space-y-1 px-2 overflow-y-auto">
+          <nav className="flex-grow mt-1 space-y-1 px-2 overflow-y-auto">
             {menuItems.map((item, index) => (
               <SidebarItem
                 key={index}

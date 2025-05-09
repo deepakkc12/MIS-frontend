@@ -23,6 +23,7 @@ import {
 } from "recharts";
 import { formatCurrency, formatDate } from "../../../../utils/helper";
 import { getRequest } from "../../../../services/apis/requests";
+import { lastUpdated } from "../../../../utils/constants";
 
 const SalesOverView = () => {
   // State management
@@ -467,7 +468,7 @@ const SalesOverView = () => {
                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <span className="font-medium">Last Updated: {formatDate("2025-02-21")}</span>
+            <span className="font-medium">Last Updated: {lastUpdated}</span>
           </div>
 
           {/* Controls Group with consistent styling */}

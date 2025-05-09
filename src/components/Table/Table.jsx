@@ -21,7 +21,7 @@ const Table = ({
   selectionActionTitle = "Action",
   onSelectionAction = () => {},
   selectedRows = [],
-  setSelectedRows =()=>{}
+  setSelectedRows = () => {},
 }) => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
   const [openDropdownIndex, setOpenDropdownIndex] = useState(null);
@@ -29,15 +29,14 @@ const Table = ({
   const formatValue = (value) => {
     if (value == null || value == "") return "-"; // Covers both null & undefined
     if (typeof value === "boolean") return value.toString(); // Avoid treating booleans as numbers
-  
+
     const num = Number(value);
     if (!isNaN(num)) {
       return Number.isInteger(num) ? num : num.toFixed(2); // Keep integers as they are
     }
-  
+
     return value; // Return original value if it's not a number
   };
-  
 
   const sortedData = React.useMemo(() => {
     if (!sortConfig.key) return data;
@@ -70,11 +69,11 @@ const Table = ({
   };
 
   const getSortIcon = (key) => {
-    if (sortConfig.key !== key) return <ArrowUpDown className="ml-1 h-4 w-4" />;
+    if (sortConfig.key !== key) return <ArrowUpDown className="ml-1 h-4 w-4 opacity-40 group-hover:opacity-100" />;
     return sortConfig.direction === "ascending" ? (
-      <ArrowUp className="ml-1 h-4 w-4" />
+      <ArrowUp className="ml-1 h-4 w-4 text-blue-600" />
     ) : (
-      <ArrowDown className="ml-1 h-4 w-4" />
+      <ArrowDown className="ml-1 h-4 w-4 text-blue-600" />
     );
   };
 
@@ -91,11 +90,11 @@ const Table = ({
   };
 
   const getColumnStyle = (header, value, row) => {
-    const baseStyle = `${header.style && header.style(row)} p-4 border`;
+    const baseStyle = `${header.style && header.style(row)} p-4 border-b`;
     if (header.onColumnClick) {
       return `text-blue-600 hover:text-blue-800 hover:underline ${baseStyle} cursor-pointer font-medium transition-colors`;
     }
-    return baseStyle + "text-gray-800";
+    return `${baseStyle} text-gray-800`;
   };
 
   const handleSelectAll = () => {
@@ -117,8 +116,8 @@ const Table = ({
   };
 
   const getSerialNumber = (index) => {
-    const dataIndex = fullData.findIndex(item => 
-      JSON.stringify(item) === JSON.stringify(sortedData[index])
+    const dataIndex = fullData.findIndex(
+      (item) => JSON.stringify(item) === JSON.stringify(sortedData[index])
     );
     return dataIndex + 1;
   };
@@ -131,51 +130,45 @@ const Table = ({
   }, []);
 
   return (
-    <div className="rounded-lg bg-card text-card-foreground">
+    <div className="rounded-lg border shadow-sm bg-white overflow-hidden">
       <div className="relative w-full overflow-auto">
         <table className="w-full caption-bottom text-sm">
-          <thead className="border-b bg-gray-50/50">
+          <thead className="bg-gray-50 border-b">
             <tr>
               {enableSelection && (
                 <th className="h-12 px-4 text-left">
                   <div className="flex items-center space-x-4">
                     <button
                       onClick={handleSelectAll}
-                      className={`h-5 w-5 rounded border ${
-                        selectedRows?.length === sortedData?.length && fullData.length>0
-                          ? "bg-blue-600 text-white"
-                          : "bg-white"
-                      } flex  items-center justify-center transition-colors`}
+                      className={`h-5 w-5 rounded ${
+                        selectedRows?.length === sortedData?.length && fullData.length > 0
+                          ? "bg-blue-600 text-white border-blue-600"
+                          : "bg-white border border-gray-300 hover:bg-gray-100"
+                      } flex items-center justify-center transition-colors`}
                     >
-                      {selectedRows?.length === sortedData.length  && fullData.length>0 &&(
+                      {selectedRows?.length === sortedData?.length && fullData.length > 0 && (
                         <Check className="h-4 w-4" />
                       )}
                     </button>
-                  
                   </div>
                 </th>
               )}
               {headers.map((header) => (
                 <th
                   key={header.key}
-                  className="h-12 px-4 text-left font-medium text-muted-foreground cursor-pointer hover:bg-gray-50/70 transition-colors"
+                  className="h-12 px-4 text-left font-medium text-gray-600 cursor-pointer group hover:bg-gray-100 transition-colors"
                   onClick={() => requestSort(header.key)}
                 >
                   <div className="flex items-center justify-start space-x-2">
-                    <span className="text-[15px] py-3 text-green-700 font-bold">
+                    <span className="text-[14px] font-semibold">
                       {header.label}
                     </span>
                     {getSortIcon(header.key)}
-                    {/* {header.onColumnClick && (
-                      <span className="ml-2 text-xs text-blue-600">
-                        (clickable)
-                      </span>
-                    )} */}
                   </div>
                 </th>
               ))}
               {actions.length > 0 && (
-                <th className="h-12 px-4 text-center text-blue-600 font-medium text-muted-foreground">
+                <th className="h-12 px-4 text-center font-medium text-gray-600">
                   Actions
                 </th>
               )}
@@ -183,31 +176,31 @@ const Table = ({
           </thead>
 
           {!loading && (
-            <tbody>
+            <tbody className="divide-y">
               {sortedData.map((row, index) => (
                 <tr
                   onClick={() => {
                     onRowClick(row);
                   }}
                   key={index}
-                  className={`border transition-colors ${
+                  className={`transition-colors ${
                     enableRowClick
-                      ? "cursor-pointer hover:bg-gray-100/50"
-                      : "hover:bg-gray-50/50"
-                  }`}
+                      ? "cursor-pointer hover:bg-blue-50"
+                      : "hover:bg-gray-50"
+                  } ${selectedRows?.includes(row) ? "bg-blue-50/50" : ""}`}
                 >
                   {enableSelection && (
-                    <td className="p-4 border">
+                    <td className="p-4 border-b">
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleSelectRow(row);
                           }}
-                          className={`h-5 w-5 rounded border ${
+                          className={`h-5 w-5 rounded ${
                             selectedRows?.includes(row)
-                              ? "bg-blue-600 text-white"
-                              : "bg-white"
+                              ? "bg-blue-600 text-white border-blue-600"
+                              : "bg-white border border-gray-300 hover:bg-gray-100"
                           } flex items-center justify-center transition-colors`}
                         >
                           {selectedRows?.includes(row) && (
@@ -238,16 +231,18 @@ const Table = ({
                           </div>
                         )
                       ) : (
-                        <div className="font-medium text-start">
-                          {row[header.key] == 1 ? "Yes" : "No"}
+                        <div className="flex items-center">
+                          <span className={`inline-flex items-center justify-center px-2 py-1 text-xs font-medium rounded-full ${row[header.key] == 1 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                            {row[header.key] == 1 ? "Yes" : "No"}
+                          </span>
                         </div>
                       )}
                     </td>
                   ))}
                   {actions.length > 0 && (
-                    <td className="p-4 border relative">
+                    <td className="p-4 border-b relative">
                       <button
-                        className="flex mx-auto h-8 w-8 items-center justify-center rounded-md border transition-colors hover:bg-gray-50"
+                        className="flex mx-auto h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-gray-100"
                         onClick={(e) => {
                           e.stopPropagation();
                           setOpenDropdownIndex(
@@ -255,7 +250,7 @@ const Table = ({
                           );
                         }}
                       >
-                        <MoreVertical className="h-4 w-4" />
+                        <MoreVertical className="h-4 w-4 text-gray-500" />
                       </button>
                       {openDropdownIndex === index && (
                         <div
@@ -263,9 +258,9 @@ const Table = ({
                             sortedData.length === 1
                               ? "right-0"
                               : index === sortedData.length - 1
-                              ? "bottom-4 right-0"
+                              ? "bottom-12 right-0"
                               : "right-0"
-                          }  w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50`}
+                          } w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50`}
                         >
                           <div className="py-1" role="menu">
                             {actions.map((action, actionIndex) => (
@@ -275,7 +270,7 @@ const Table = ({
                                   isActionEnabled(row, action)
                                     ? "text-gray-700 hover:bg-gray-100"
                                     : "text-gray-400 cursor-not-allowed"
-                                } group flex w-full items-center px-4 py-2 text-sm`}
+                                } group flex w-full items-center px-4 py-2 text-sm transition-colors duration-150`}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   if (isActionEnabled(row, action)) {
@@ -307,8 +302,26 @@ const Table = ({
                     headers.length + (actions.length ? 1 : 0) + (enableSelection ? 1 : 0)
                   }
                 >
-                  <div className="flex h-[200px] items-center justify-center text-muted-foreground">
-                    No results found
+                  <div className="flex h-[200px] items-center justify-center text-gray-500">
+                    <div className="flex flex-col items-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-12 w-12 text-gray-300 mb-4"
+                      >
+                        <rect width="18" height="18" x="3" y="3" rx="2" />
+                        <path d="M3 9h18" />
+                        <path d="M9 21V9" />
+                      </svg>
+                      <span className="text-base">No results found</span>
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -324,7 +337,10 @@ const Table = ({
                   }
                 >
                   <div className="flex h-[200px] items-center justify-center">
-                    <Loader className="h-8 w-8 animate-spin text-purple-900" />
+                    <div className="flex flex-col items-center text-blue-600">
+                      <Loader className="h-8 w-8 animate-spin mb-2" />
+                      <span className="text-sm text-gray-500">Loading data...</span>
+                    </div>
                   </div>
                 </td>
               </tr>

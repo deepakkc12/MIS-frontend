@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import { formatCurrency } from '../../../../utils/helper';
 import { getRequest } from '../../../../services/apis/requests';
+import { lastUpdated } from '../../../../utils/constants';
 
 const EnhancedSalesDashboard = () => {
   // State management
@@ -446,7 +447,7 @@ const EnhancedSalesDashboard = () => {
           </div>
           
           <div className="mt-6 text-right text-sm text-gray-500">
-            Last updated: {new Date().toLocaleString()}
+            Last updated: {lastUpdated}
           </div>
         </div>
       );

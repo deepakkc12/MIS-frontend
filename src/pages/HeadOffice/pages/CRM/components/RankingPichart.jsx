@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Sector, Legend, Tooltip } from 'recharts';
 import { getRequest } from '../../../../../services/apis/requests';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 const CustomerLevelPieChart = () => {
   const [activeIndex, setActiveIndex] = useState(null);
@@ -69,21 +70,15 @@ const CustomerLevelPieChart = () => {
     setActiveIndex(null);
   };
 
+const navigate = useNavigate()
   // Custom click handler
   const handlePieClick = (_, index) => {
     const tier = data[index]?.tierName;
     setSelectedTier(tier === selectedTier ? null : tier);
+    console.log(tier)
+    navigate(`/crm/${tier}`)
   };
 
-  // Format date for display
-  const formatDate = (date) => {
-    if (!date) return "";
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
-  };
 
   // Custom active shape with enhanced animation and details
   const renderActiveShape = (props) => {
@@ -100,6 +95,7 @@ const CustomerLevelPieChart = () => {
           outerRadius={outerRadius + 10}
           startAngle={startAngle}
           endAngle={endAngle}
+          onClick={(d)=>{console.log(d)}}
           fill={fill}
           strokeWidth={2}
           stroke="#fff"
@@ -174,7 +170,7 @@ const CustomerLevelPieChart = () => {
                 backgroundColor: isSelected ? `${item.color}15` : isActive ? '#f8f8f8' : '#fff',
                 borderLeft: `4px solid ${item.color}`
               }}
-            //   onClick={() => handlePieClick(null, index)}
+              onClick={() => console.log("jjr")}
             //   onMouseEnter={() => setActiveIndex(index)}
             //   onMouseLeave={() => setActiveIndex(null)}
             >
@@ -216,7 +212,7 @@ const CustomerLevelPieChart = () => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-md w-full h-full border border-gray-100">
+    <div className="bg-white p-6 rounded-xl shadow-md w-full h-[31rem] border border-gray-100">
       <div className="text-center mb-2">
         <h2 className="text-2xl font-bold text-gray-800">Customer Tier Distribution</h2>
         {dataTimestamp && (
@@ -250,7 +246,7 @@ const CustomerLevelPieChart = () => {
        */}
 
       {isLoading ? (
-        <div className="h-80 flex items-center justify-center">
+        <div className="h-64 flex items-center justify-center">
           <div className="text-gray-500">Loading customer data...</div>
         </div>
       ) : (
@@ -278,6 +274,7 @@ const CustomerLevelPieChart = () => {
                   const isSelected = entry.tierName === selectedTier;
                   return (
                     <Cell 
+                    onClick={(S)=>{console.log(entry.tierName)}}
                       key={`cell-${index}`} 
                       fill={entry.color}
                       stroke="#fff"

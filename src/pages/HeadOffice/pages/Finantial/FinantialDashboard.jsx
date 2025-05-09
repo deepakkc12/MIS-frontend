@@ -5,6 +5,9 @@ import Rupee from '../../../../components/Elements/Rupee';
 import { getRequest } from '../../../../services/apis/requests';
 import { useNavigate } from 'react-router-dom';
 import BackdatedEntriesCard from './components/BackDatedEntrieCard';
+import ROIDetailsCard from './components/ROIDetailsCard';
+import ReceivablesPayablesCard from './components/Recievables&Payables';
+import { OpExDetailsCard } from './components/Opex&CapexCards';
 
 const FinancialDashboard = () => {
     const [dateRange, setDateRange] = useState('30');
@@ -242,10 +245,9 @@ const FinancialDashboard = () => {
   return (
     <MainLayout>
       <div className="bg-gray-50 p-6 rounded-lg w-full mx-auto">
-        {/* Header with controls */}
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Financial Exceptions Dashboard</h1>
+            <h1 className="text-2xl font-bold text-blue-700">Financial Audits</h1>
             <p className="text-sm text-gray-500">Monitor accounting exceptions and financial audit items requiring attention</p>
           </div>
           <div className="flex gap-4">
@@ -479,240 +481,12 @@ const FinancialDashboard = () => {
             formatDate={formatDate} 
             matricsData={matricsData} 
           />
+          <ROIDetailsCard/>
+          <ReceivablesPayablesCard/>
+          <OpExDetailsCard/>
         </div>
 
-        {/* Expense as Income Data Table */}
-        <div className="bg-white p-4 rounded-lg shadow mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold flex items-center">
-              <FileText className="h-5 w-5 mr-2 text-red-600" />
-              Recent Expenses as Income Entries
-            </h2>
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search entries..."
-                  className="pl-8 pr-4 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              </div>
-              <button 
-                onClick={() => navigate('/financials/expenses-as-income')}
-                className="text-sm text-red-600 flex items-center"
-              >
-                View All <ChevronRight className="h-4 w-4 ml-1" />
-              </button>
-            </div>
-          </div>
-          
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Voucher</th>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account</th>
-                  <th scope="col" className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Dr Amount</th>
-                  <th scope="col" className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Cr Amount</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredExpenseData.slice(0, 10).map((item, index) => (
-                  <tr key={`${item.code}-${index}`} className="hover:bg-gray-50">
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">{formatDate(item.DOT)}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">{item.VoucherNo}</td>
-                    <td className="px-3 py-2 text-xs text-gray-900 max-w-xs truncate" title={item.Description}>
-                      {item.Description}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">{item.Account}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 text-right">
-                      {parseFloat(item.DrAmout) > 0 ? `₹${formatAmount(item.DrAmout)}` : '-'}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 text-right">
-                      {parseFloat(item.CrAmout) > 0 ? `₹${formatAmount(item.CrAmout)}` : '-'}
-                    </td>
-                  </tr>
-                ))}
-                {filteredExpenseData.length === 0 && (
-                  <tr>
-                    <td colSpan="6" className="px-3 py-4 text-center text-sm text-gray-500">
-                      No expenses as income entries found
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          
-          {filteredExpenseData.length > 0 && (
-            <div className="mt-4 text-center">
-              <button 
-                onClick={() => navigate('/financials/expenses-as-income')}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                View All Expense as Income Entries <ChevronRight className="ml-2 h-4 w-4" />
-              </button>
-            </div>
-          )}
-        </div>
 
-        {/* Range Exceeded Data Table */}
-        <div className="bg-white p-4 rounded-lg shadow mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold flex items-center">
-              <Clock className="h-5 w-5 mr-2 text-purple-600" />
-              Recent Range Exceptions
-            </h2>
-            <button 
-              onClick={() => navigate('/financials/range-exceptions')}
-              className="text-sm text-purple-600 flex items-center"
-            >
-              View All <ChevronRight className="h-4 w-4 ml-1" />
-            </button>
-          </div>
-          
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Voucher</th>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account</th>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Group</th>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                  <th scope="col" className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {rangeExceededData.slice(0, 10).map((item, index) => (
-                  <tr key={`${item.code}-${index}`} className="hover:bg-gray-50">
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">{formatDate(item.DOT)}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">{item.VoucherNo}</td>
-                    <td className="px-3 py-2 text-xs text-gray-900">{item.Name}</td>
-                    <td className="px-3 py-2 text-xs text-gray-500">{item.accGroup}</td>
-                    <td className="px-3 py-2 text-xs text-gray-900">
-                      <span className={`px-2 py-1 rounded-full text-xs ${item.Mode === 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {item.Mode === 1 ? 'Debit' : 'Credit'}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-right font-medium text-gray-900">
-                      ₹{formatAmount(item.Amount)}
-                    </td>
-                  </tr>
-                ))}
-                {rangeExceededData.length === 0 && (
-                  <tr>
-                    <td colSpan="6" className="px-3 py-4 text-center text-sm text-gray-500">
-                      No range exception entries found
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          
-          {rangeExceededData.length > 0 && (
-            <div className="mt-4 text-center">
-              <button 
-                onClick={() => navigate('/financials/range-exceptions')}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-              >
-                View All Range Exceptions <ChevronRight className="ml-2 h-4 w-4" />
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Backdated Entries Table */}
-        <div className="bg-white p-4 rounded-lg shadow">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold flex items-center">
-              <AlertTriangle className="h-5 w-5 mr-2 text-orange-600" />
-              Recent Backdated Entries
-            </h2>
-            <button 
-              onClick={() => navigate('/financials/backdated-entries')}
-              className="text-sm text-orange-600 flex items-center"
-            >
-              View All <ChevronRight className="h-4 w-4 ml-1" />
-            </button>
-          </div>
-          
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transaction Date</th>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entry Date</th>
-                  <th scope="col" className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Days Backdated</th>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Voucher</th>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account/Description</th>
-                  <th scope="col" className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Dr Amount</th>
-                  <th scope="col" className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Cr Amount</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {backDatedEntries.slice(0, 10).map((item, index) => {
-                  const daysDiff = calculateDaysDiff(item.DOT);
-                  return (
-                    <tr key={`${item.CODE}-${index}`} className="hover:bg-gray-50">
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
-                        {formatDate(item.DOT)}
-                        <span className="block text-xs text-gray-500">{item.Alias}</span>
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">{formatDate(item.EntryDate)}</td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-center">
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          daysDiff > 90 ? 'bg-red-100 text-red-800' : 
-                          daysDiff > 30 ? 'bg-orange-100 text-orange-800' : 
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {daysDiff} days
-                        </span>
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">{item.VoucherNo}</td>
-                      <td className="px-3 py-2 text-xs text-gray-900">
-                        <div className="font-medium">{item.Name}</div>
-                        <div className="text-gray-500 text-xs">{item.Description}</div>
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-right font-medium text-gray-900">
-                        {parseFloat(item.Dr) > 0 ? `₹${formatAmount(item.Dr)}` : '-'}
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-right font-medium text-gray-900">
-                        {parseFloat(item.Cr) > 0 ? `₹${formatAmount(item.Cr)}` : '-'}
-                      </td>
-                    </tr>
-                  );
-                })}
-                {backDatedEntries.length === 0 && (
-                  <tr>
-                    <td colSpan="7" className="px-3 py-4 text-center text-sm text-gray-500">
-                      No backdated entries found
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          
-          {backDatedEntries.length > 0 && (
-            <div className="mt-4 text-center">
-              <button 
-                onClick={() => navigate('/financials/backdated-entries')}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-              >
-                View All Backdated Entries <ChevronRight className="ml-2 h-4 w-4" />
-              </button>
-            </div>
-          )}
-        </div>
       </div>
     </MainLayout>
   );

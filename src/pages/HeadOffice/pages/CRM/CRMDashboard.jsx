@@ -7,7 +7,9 @@ import {
   Users, TrendingUp, AlertTriangle, Award, Clock, Star, UserX,
   Activity, DollarSign, Store, UserCheck, Loader2, Building2,
   ArrowUpRight, ArrowDownRight, BarChart3, PieChartIcon, RefreshCcw,
-  ArrowRight, Calendar, Filter, ChevronDown, Settings, Search
+  ArrowRight, Calendar, Filter, ChevronDown, Settings, Search,
+  LifeBuoyIcon,
+  UserPlus2
 } from "lucide-react";
 import MainLayout from "../../Layout/Layout";
 import { useNavigate } from "react-router-dom";
@@ -22,6 +24,7 @@ const CRMDashboard = () => {
   const [metrics, setMetrics] = useState({
     totalCustomers: 0,
     customerGrowth: 0,
+    currentMonthCustomer:0,
     avgBillValue: 156.78,
     revenueGrowth: 8.2,
     avgStoreVisits: 3.2,
@@ -43,16 +46,27 @@ const CRMDashboard = () => {
 
   const toast = useToast();
 
+
+
   const getCRMMetricses = async () => {
     try {
       const response = await getRequest(`crm/metrics/?timeRange=${timeRange}`);
+      console.log(response)
+
+            const response2 = await getRequest(`crm/live-levels/`);
+            
       if (response.success) {
         setMetrics((prevMetrics) => ({
           ...prevMetrics,
+          platinumCustomers:response2.data[0].count,
+          goldCustomers:response2.data[1].count,
+          silverCustomers:response2.data[2].count,
+          bronzeCustomers:response2.data[3].count,
           totalCustomers: response.data.totalCustomers,
           avgBillValue: response.data.avgABV,
-          avgATV: response.data.avgATV,
+          avgStoreVisits: response.data.avgATV,
           customerGrowth: response.data.customerTrend,
+          currentMonthCustomer:response.data.CurrentMCustomers
         }));
       } else {
         console.error("Failed to fetch CRM metrics");
@@ -140,8 +154,62 @@ const CRMDashboard = () => {
   
   const [customerValue,setCustomerValue] = useState([  ]);
 
+
+const NavigationCard = ({ title, description, icon: Icon, to, animate = true, delay = 0,value }) => {
+  const navigate = useNavigate();
+
+  return (
+    <div 
+      className="bg-white rounded-2xl shadow-md overflow-hidden relative transition-all duration-300 hover:shadow-lg cursor-pointer"
+      onClick={() => navigate(to)}
+      style={{
+        animation: animate ? `fadeInUp 0.5s ease-out ${delay}s forwards` : "none",
+        opacity: animate ? 1 : 0,
+      }}
+    >
+      <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-blue-50 opacity-20 -mr-8 -mt-8"></div>
+
+      <div className="p-6">
+        <div className="flex items-center space-x-3 mb-3">
+          <div className="p-3 bg-blue-600 rounded-lg shadow-sm">
+            <Icon className="h-5 w-5 text-white" />
+          </div>
+          <h3 className="text-sm font-medium text-gray-500">{title}</h3>
+        </div>
+        {value&&<div className="flex justify-between items-center">
+          <span className="text-3xl font-bold text-gray-900">
+            {typeof value === "number"
+              ? value.toLocaleString(undefined, {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 2,
+                })
+              : value}
+          </span>
+          <button className="flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 transition group">
+            Go to Page
+            <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform duration-200" />
+          </button>
+        </div>
+        
+        }
+
+        <p className="text-gray-700 text-sm mt-4">{description}</p>
+
+      {!value&&  <div className="flex mt-4 items-center">
+          <button className="flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 transition group">
+            Go to Page
+            <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform duration-200" />
+          </button>
+        </div>}
+      </div>
+    </div>
+  );
+};
+
+
+
   // Main metric cards with enhanced visualization
-  const MetricCard = ({ title, value, prefix, suffix, icon: Icon, growth, animate = true, delay = 0 }) => (
+  const MetricCard = ({ title, value, prefix, suffix, icon: Icon, growth, animate = true, delay = 0 ,description}) => (
     <div 
       className="bg-white rounded-2xl shadow-md overflow-hidden relative transition-all duration-300 hover:shadow-lg"
       style={{
@@ -192,6 +260,8 @@ const CRMDashboard = () => {
             <span className="text-xs text-gray-500 ml-2">vs last period</span>
           </div>
         )}
+            
+            {description&&<span className="text-sm text-gray-600">{description}</span>}
       </div>
     </div>
   );
@@ -262,56 +332,58 @@ const CRMDashboard = () => {
     return colorMap[colorClass] || '#3B82F6';
   };
 
-  // Elegant tier card with 3D effect
-  const TierCard = ({ tier, count, color, totalCustomers, delay = 0 }) => {
-    const percentage = ((count / metrics.totalCustomers) * 100).toFixed(1);
-    const bgColor = tier.toLowerCase() === 'platinum' ? 'bg-gradient-to-br from-gray-400 to-gray-700' : 
-                    tier.toLowerCase() === 'gold' ? 'bg-gradient-to-br from-yellow-300 to-yellow-600' :
-                    tier.toLowerCase() === 'silver' ? 'bg-gradient-to-br from-gray-300 to-gray-500' :
-                    'bg-gradient-to-br from-amber-700 to-amber-900';
+  // Elegant tier card with 3D effectconst 
+ const TierCard = ({ tier, count, color, totalCustomers, delay = 0 }) => {
+  const percentage = ((count / metrics.totalCustomers) * 100).toFixed(1);
 
-    return (
-      <div
-        className={`${bgColor} rounded-2xl shadow-lg p-6 hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 relative overflow-hidden`}
-        style={{
-          animation: isLoading ? 'none' : `fadeInUp 0.7s ease-out ${delay}s forwards`,
-          opacity: isLoading ? 0 : 1,
-        }}
-      >
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white bg-opacity-5 rounded-full -mr-16 -mt-16"></div>
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white bg-opacity-5 rounded-full -ml-12 -mb-12"></div>
-        
-        <div className="flex items-center justify-between mb-5 relative z-10">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-full bg-white bg-opacity-20">
-              <Award className="h-6 w-6 text-white" />
-            </div>
-            <h3 className="text-lg font-semibold capitalize text-white">
-              {tier}
-            </h3>
+  const bgColor = tier.toLowerCase() === 'premium' ? 'bg-gradient-to-br from-violet-500 to-violet-900' : 
+                  tier.toLowerCase() === 'gold' ? 'bg-gradient-to-br from-yellow-300 to-yellow-600' :
+                  tier.toLowerCase() === 'bronze' ? 'bg-gradient-to-br from-orange-600 to-orange-900' :
+                  'bg-gradient-to-br from-blue-500 to-blue-700'; // Standard (Muted Blue)
+
+  return (
+    <div
+      className={`${bgColor} rounded-2xl shadow-lg p-6 hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 relative overflow-hidden`}
+      style={{
+        animation: isLoading ? 'none' : `fadeInUp 0.7s ease-out ${delay}s forwards`,
+        opacity: isLoading ? 0 : 1,
+      }}
+    >
+      <div className="absolute top-0 right-0 w-32 h-32 bg-white bg-opacity-5 rounded-full -mr-16 -mt-16"></div>
+      <div className="absolute bottom-0 left-0 w-24 h-24 bg-white bg-opacity-5 rounded-full -ml-12 -mb-12"></div>
+      
+      <div className="flex items-center justify-between mb-5 relative z-10">
+        <div className="flex items-center space-x-3">
+          <div className="p-2 rounded-full bg-white bg-opacity-20">
+            <Award className="h-6 w-6 text-white" />
           </div>
-          <span className="text-3xl font-extrabold text-white">
-            {count.toLocaleString()}
-          </span>
+          <h3 className="text-lg font-semibold capitalize text-white">
+            {tier}
+          </h3>
         </div>
-
-        <div className="w-full bg-black bg-opacity-30 rounded-full h-2.5 mb-4 overflow-hidden">
-          <div
-            className="h-2.5 rounded-full transition-all duration-500 bg-white"
-            style={{ width: `${percentage}%` }}
-          />
-        </div>
-
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-200">{percentage}% of total</span>
-          <button className="flex items-center text-sm font-medium text-white hover:text-gray-200 transition group">
-            View Details
-            <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform duration-200" />
-          </button>
-        </div>
+        <span className="text-3xl font-extrabold text-white">
+          {count.toLocaleString()}
+        </span>
       </div>
-    );
-  };
+
+      <div className="w-full bg-black bg-opacity-30 rounded-full h-2.5 mb-4 overflow-hidden">
+        <div
+          className="h-2.5 rounded-full transition-all duration-500 bg-white"
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
+
+      <div onClick={()=>{navigate(`/crm/${tier}`)}} className="flex items-center justify-between">
+        <span className="text-sm text-gray-200">{percentage}% of total</span>
+        <button className="flex items-center text-sm font-medium text-white hover:text-gray-200 transition group">
+          View Details
+          <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform duration-200" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
 
   const navigate = useNavigate();
   if (isLoading)  return <CRMDashboardSkeleton/>
@@ -327,7 +399,7 @@ const CRMDashboard = () => {
           {/* Header with title, search, time filter and refresh */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Customer Management Dashboard</h1>
+              <h1 className="text-2xl font-bold text-blue-700">Customer Management</h1>
               <p className="text-gray-500 mt-1">Real-time insights into your customer base</p>
             </div>
             
@@ -382,7 +454,7 @@ const CRMDashboard = () => {
           </div>
 
           {/* Top metrics section with KPIs */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <MetricCard
               title="Total Customers"
               value={metrics.totalCustomers}
@@ -390,13 +462,15 @@ const CRMDashboard = () => {
               growth={metrics.customerGrowth}
               delay={0.1}
             />
-            <MetricCard
-              title="Monthly Revenue"
-              value={metrics.revenue }
-              prefix="₹"
+            <NavigationCard
+              title="New Customers"
+              value={metrics.currentMonthCustomer }
+              prefix=""
               // suffix="L"
-              icon={DollarSign}
-              growth={metrics.revenueChange}
+              description={"Customers joined this month"}
+              icon={UserPlus2}
+              // growth={metrics.revenueChange}
+
               delay={0.2}
             />
             <MetricCard
@@ -404,9 +478,16 @@ const CRMDashboard = () => {
               value={metrics.avgBillValue}
               prefix="₹"
               icon={Store}
-              growth={metrics.revenueGrowth}
+              // growth={metrics.revenueGrowth}
               delay={0.3}
             />
+            <NavigationCard 
+ title="Customer Insights"
+  description="Explore customer activity within the selected purchase period."
+  icon={Users}  // Import Users icon from lucide-react
+  to="/crm/buying-days"
+/>
+
             {/* <MetricCard
               title="Customer Lifetime"
               value={metrics.customerLifetime}
@@ -575,60 +656,13 @@ const CRMDashboard = () => {
                   </ResponsiveContainer>
                 </div>
               </div>
-              
-              {/* Customer tier distribution */}
-              {/* <div className="bg-white rounded-2xl shadow-md p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                  <PieChartIcon className="h-5 w-5 mr-2 text-blue-600" />
-                  Customer Tier Distribution
-                </h2>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={[
-                          { name: "Platinum", value: metrics.platinumCustomers },
-                          { name: "Gold", value: metrics.goldCustomers },
-                          { name: "Silver", value: metrics.silverCustomers },
-                          { name: "Bronze", value: metrics.bronzeCustomers },
-                        ]}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={90}
-                        paddingAngle={2}
-                        dataKey="value"
-                        labelLine={false}
-                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {[
-                          TIER_COLORS.platinum,
-                          TIER_COLORS.gold,
-                          TIER_COLORS.silver,
-                          TIER_COLORS.bronze
-                        ].map((color, index) => (
-                          <Cell key={`cell-${index}`} fill={color} stroke="#fff" strokeWidth={2} />
-                        ))}
-                      </Pie>
-                      <Tooltip 
-                        formatter={(value) => [Number(value).toLocaleString(), "Customers"]}
-                        contentStyle={{
-                          backgroundColor: "white",
-                          border: "1px solid #e5e7eb",
-                          borderRadius: "8px",
-                          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </div> */}
+        
               <CustomerLevelPieChart/>
             </div>
           </div>
           
           {/* Bottom section - Customer tiers cards */}
-          <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-xl p-6 mb-8" 
+          <div className="bg-gradient-to-br from-gray-700 to-gray-900 rounded-2xl shadow-xl p-6 mb-8" 
                style={{
                  animation: isLoading ? 'none' : 'fadeIn 0.8s ease-out forwards',
                  opacity: isLoading ? 0 : 1,
@@ -645,7 +679,7 @@ const CRMDashboard = () => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               <TierCard
-                tier="Platinum"
+                tier="Premium"
                 count={metrics.platinumCustomers}
                 color={TIER_COLORS.platinum}
                 totalCustomers={metrics.totalCustomers}
@@ -659,13 +693,13 @@ const CRMDashboard = () => {
                 delay={0.2}
               />
               <TierCard
-                tier="Silver"
+                tier="Bronze"
                 count={metrics.silverCustomers}
                 color={TIER_COLORS.silver}
                 totalCustomers={metrics.totalCustomers}delay={0.3}
                 />
                 <TierCard
-                  tier="Bronze"
+                  tier="Standard"
                   count={metrics.bronzeCustomers}
                   color={TIER_COLORS.bronze}
                   totalCustomers={metrics.totalCustomers}
